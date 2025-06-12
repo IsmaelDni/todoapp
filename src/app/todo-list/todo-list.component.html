@@ -1,0 +1,134 @@
+<div class="card shadow">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between">
+    <h1 class="h4 mb-0">📝 Ma Todo List</h1>
+    <span class="badge bg-primary fs-6">{{ todos.length }} tâche{{ todos.length > 1 ? 's' : '' }}</span>
+  </div>
+  
+  <div class="card-body">
+    
+    <!-- Menu déroulant de dossier -->
+     <app-folder-list (folderSelected)="onFolderChange($event)"></app-folder-list>
+    <!-- Message si pas de dossier -->
+
+    <div *ngIf="!selectedFolderId" class="alert alert-warning py-2 mb-3">
+      Veuillez sélectionner un dossier pour ajouter une tâche.
+    </div>
+
+    <!-- Formulaire d'ajout -->
+    <form class="row g-2 align-items-center mb-4" (ngSubmit)="addTodo()">
+      <div class="col-md-6">
+        <input 
+          [(ngModel)]="newTodo"
+          name="todoText"
+          class="form-control form-control-lg"
+          placeholder="Quoi de neuf à faire ?"
+          required
+        >
+      </div>
+      <div class="col-md-3">
+        <select [(ngModel)]="newPriority" name="priority" class="form-select form-select-lg">
+          <option value="normal">Normal</option>
+          <option value="important">Important</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-primary btn-lg" type="submit" [disabled]="!selectedFolderId">
+          <i class="bi bi-plus"></i> Ajouter
+        </button>
+      </div>
+    </form>
+
+    
+    <div class="row mb-3">
+      <div class="col-md-4 mb-2">
+        <input type="text" class="form-control" placeholder="Rechercher une tâche..."
+              [(ngModel)]="searchText">
+      </div>
+      <div class="col-md-3 mb-2">
+        <select class="form-select" [(ngModel)]="filterPriority">
+          <option value="">Toutes priorités</option>
+          <option value="normal">Normal</option>
+          <option value="important">Important</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <select class="form-select" [(ngModel)]="filterStatus">
+          <option value="">Tous statuts</option>
+          <option value="done">Terminées</option>
+          <option value="todo">À faire</option>
+        </select>
+      </div>
+    </div>
+
+    <ul class="list-group">
+       <li class="list-group-item d-flex align-items-center">
+          <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()">
+          <span class="ms-2">Tout sélectionner</span>
+        </li>
+        <div class="mb-3" *ngIf="selectedTodos().length > 0">
+          <button class="btn btn-danger btn-sm me-2" (click)="deleteSelectedTodos()">
+            <i class="bi bi-trash"></i> Supprimer la sélection
+          </button>
+          <button class="btn btn-secondary btn-sm">
+            <i class="bi bi-archive"></i> Archiver la sélection
+          </button>
+        </div>
+        <li 
+          class="list-group-item d-flex justify-content-between align-items-center"
+          *ngFor="let todo of filteredTodos"
+          [ngClass]="{'list-group-item-success': todo.done}"
+        >
+        <div class="d-flex align-items-center">
+          <input type="checkbox" [(ngModel)]="todo.selected" (change)="onSelectChange()">
+          
+          <!-- Texte -->
+          <span *ngIf="editId !== todo.id" [class.text-decoration-line-through]="todo.done" class="fs-5">{{ todo.text }}</span>
+          <input *ngIf="editId === todo.id"
+                [(ngModel)]="editText"
+                class="form-control form-control-sm me-2"
+                (keyup.enter)="saveEdit(todo)"
+                (keyup.esc)="cancelEdit()"
+                style="width: 200px; display: inline-block;">
+          <!-- Priorité -->
+          <span *ngIf="editId !== todo.id" class="badge ms-3"
+            [ngClass]="{
+              'bg-secondary': todo.priority === 'normal',
+              'bg-warning text-dark': todo.priority === 'important',
+              'bg-danger': todo.priority === 'urgent'
+            }">{{ todo.priority }}</span>
+          <select *ngIf="editId === todo.id"
+                  [(ngModel)]="editPriority"
+                  class="form-select form-select-sm ms-2"
+                  style="width: 120px; display: inline-block;">
+            <option value="normal">Normal</option>
+            <option value="important">Important</option>
+            <option value="urgent">Urgent</option>
+          </select>
+          <input type="checkbox" class="form-check-input me-2" [checked]="todo.done" (change)="toggleDone(todo)">
+        </div>
+        
+        <div>
+          <button *ngIf="editId !== todo.id" class="btn btn-outline-secondary btn-sm me-2" (click)="startEdit(todo)">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button *ngIf="editId === todo.id" type="button" class="btn btn-success btn-sm me-2" (click)="saveEdit(todo)">
+            <i class="bi bi-check"></i>
+          </button>
+          <button *ngIf="editId === todo.id" type="button" class="btn btn-secondary btn-sm me-2" (click)="cancelEdit()">
+            <i class="bi bi-x"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" (click)="deleteTodo(todo.id)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="todos.length === 0" class="text-center text-muted mt-4">
+      <i class="bi bi-inbox fs-1"></i>
+      <div class="mt-2">Aucune tâche pour le moment. Ajoutez-en une !</div>
+    </div>
+  </div>
+</div>

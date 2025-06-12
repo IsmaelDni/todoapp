@@ -1,0 +1,9 @@
+.navbar-nav .nav-link.active,
+  .navbar-nav .nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff !important;
+    transition: background 0.2s, color 0.2s;
+  }
+  .navbar {
+    border-radius: 0 0 1rem 1rem;
+  }

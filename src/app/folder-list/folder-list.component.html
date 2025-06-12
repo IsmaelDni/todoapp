@@ -1,0 +1,27 @@
+<div class="d-flex align-items-center mb-3">
+  <select class="form-select w-auto me-2" [ngModel]="selectedFolderId" (ngModelChange)="selectFolder($event)">
+    <option [ngValue]="null">Tous les dossiers</option>
+    <option *ngFor="let folder of folders" [ngValue]="folder.id">{{ folder.name }}</option>
+  </select>
+  <input class="form-control w-auto me-2" [(ngModel)]="newFolderName" placeholder="Nouveau dossier...">
+  <button class="btn btn-outline-primary" (click)="addFolder()">Ajouter dossier</button>
+
+  <!-- Menu déroulant dossiers avec suppression -->
+  <div class="dropdown ms-3">
+    <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-three-dots"></i>
+    </button>
+    <ul class="dropdown-menu">
+      <li *ngFor="let folder of folders">
+        <div class="d-flex align-items-center px-2">
+          <span (click)="selectFolder(folder.id)" [class.fw-bold]="selectedFolderId === folder.id" style="cursor:pointer; flex:1;">
+            {{ folder.name }}
+          </span>
+          <button class="btn btn-sm btn-outline-danger ms-2" (click)="deleteFolder(folder.id)" title="Supprimer le dossier">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
