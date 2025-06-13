@@ -129,7 +129,7 @@ export class TodoListComponent implements OnInit {
 
   saveEdit(todo: Todo) {
     if (this.editText.trim()) {
-      this.todoService.updateTodo(todo.id, this.editText, this.editPriority).subscribe(() => {
+      this.todoService.updateTodo(todo.id, this.editText, this.editPriority,this.editDueDate || undefined ).subscribe(() => {
         this.editId = null;
         this.editText = '';
         this.editPriority = 'normal';
