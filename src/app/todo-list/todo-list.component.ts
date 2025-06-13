@@ -17,10 +17,12 @@ export class TodoListComponent implements OnInit {
   newTodo: string = '';
   todos: Todo[] = [];
   newPriority: string = 'normal';
-
+  newDueDate: string = ''; // This is used to store the due date of the new todo
+  
   editId: number | null = null; // This is used to track which todo is being edited
   editText: string = ''; // This is used to store the text of the todo being edited
   editPriority: string = 'normal';
+  editDueDate: string = ''; // This is used to store the due date of the todo being edited
 
   searchText: string = '';
   filterPriority: string = '';
@@ -35,6 +37,7 @@ export class TodoListComponent implements OnInit {
   constructor(public todoService: TodoService) {}
   // This is the constructor where you inject the TodoService
 
+  
   get filteredTodos() {
     return this.todos.filter(todo => {
       const matchText = this.searchText
@@ -92,9 +95,15 @@ export class TodoListComponent implements OnInit {
   // This method adds a new todo item with the specified text and priority
   addTodo(): void {
     if (this.newTodo.trim()) {
-      this.todoService.addTodo(this.newTodo, this.newPriority, this.selectedFolderId !== null ? this.selectedFolderId : undefined).subscribe(() => {
+      this.todoService.addTodo(
+        this.newTodo,
+         this.newPriority,
+         this.selectedFolderId !== null ? this.selectedFolderId : undefined,
+         this.newDueDate || undefined // Pass the due date if it exists
+        ).subscribe(() => {
         this.newTodo = '';
         this.newPriority = 'normal';
+        this.newDueDate = ''; // Reset the due date input
         this.loadTodos();
       });
     }
@@ -114,6 +123,8 @@ export class TodoListComponent implements OnInit {
     this.editId = todo.id;
     this.editText = todo.text;
     this.editPriority = todo.priority;
+    this.editDueDate = todo.due_date || ''; // Set the due date if it exists
+    this.selectAll = false; // Uncheck the select all checkbox when editing
   }
 
   saveEdit(todo: Todo) {
@@ -122,6 +133,7 @@ export class TodoListComponent implements OnInit {
         this.editId = null;
         this.editText = '';
         this.editPriority = 'normal';
+        this.editDueDate = ''; // Reset the due date input
         this.loadTodos();
       });
     } else {
@@ -133,6 +145,17 @@ export class TodoListComponent implements OnInit {
     this.editId = null;
     this.editText = '';
     this.editPriority = 'normal';
+    }
+    isOverdue(todo: Todo): boolean {
+    if (!todo.due_date || todo.done) return false;
+    return new Date(todo.due_date) < new Date();
+  }
+
+  isUpcoming(todo: Todo): boolean {
+    if (!todo.due_date || todo.done) return false;
+    const now = new Date();
+    const due = new Date(todo.due_date);
+    return due >= now && due <= new Date(now.getTime() + 24*60*60*1000); // dans les 24h
   }
 
 

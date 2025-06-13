@@ -29,6 +29,7 @@ db.serialize(() => {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     priority TEXT DEFAULT 'normal',
     folder_id INTEGER,
+    due_date TEXT, 
     FOREIGN KEY(folder_id) REFERENCES folders(id) ON DELETE CASCADE
   )
 `);
@@ -53,13 +54,13 @@ appExpress.get('/api/todos', (req, res) => {
 
 // Ajouter un todo
 appExpress.post('/api/todos', (req, res) => {
-  const { text, priority, folder_id } = req.body;
+  const { text, priority, folder_id, due_date } = req.body;
   db.run(
-    "INSERT INTO todos(text, priority, folder_id) VALUES(?, ?, ?)",
-    [text, priority || 'normal', folder_id || null],
+    "INSERT INTO todos(text, priority, folder_id, due_date) VALUES(?, ?, ?, ?)",
+    [text, priority || 'normal', folder_id || null, due_date || null],
     function(err) {
       if (err) return res.status(500).json({error: err.message});
-      res.json({ id: this.lastID, text, priority: priority || 'normal', done: 0, folder_id: folder_id || null });
+      res.json({ id: this.lastID, text, priority: priority || 'normal', done: 0, folder_id: folder_id || null, due_date: due_date || null });
     }
   );
 });
@@ -114,8 +115,8 @@ appExpress.patch('/api/todos/:id/done', (req, res) => {
 
 // Modifier le texte ou la priorité
 appExpress.put('/api/todos/:id', (req, res) => {
-  const { text, priority } = req.body;
-  db.run("UPDATE todos SET text = ?, priority = ? WHERE id = ?", [text, priority, req.params.id], function(err) {
+  const { text, priority, due_date } = req.body;
+  db.run("UPDATE todos SET text = ?, priority = ?, due_date = ? WHERE id = ?", [text, priority, due_date, req.params.id], function(err) {
     if (err) return res.status(500).json({error: err.message});
     res.json({ updated: this.changes });
   });

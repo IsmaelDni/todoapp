@@ -5,10 +5,8 @@
   </div>
   
   <div class="card-body">
-    
     <!-- Menu déroulant de dossier -->
-     <app-folder-list (folderSelected)="onFolderChange($event)"></app-folder-list>
-    <!-- Message si pas de dossier -->
+    <app-folder-list (folderSelected)="onFolderChange($event)"></app-folder-list>
 
     <div *ngIf="!selectedFolderId" class="alert alert-warning py-2 mb-3">
       Veuillez sélectionner un dossier pour ajouter une tâche.
@@ -16,7 +14,7 @@
 
     <!-- Formulaire d'ajout -->
     <form class="row g-2 align-items-center mb-4" (ngSubmit)="addTodo()">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <input 
           [(ngModel)]="newTodo"
           name="todoText"
@@ -25,12 +23,21 @@
           required
         >
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <select [(ngModel)]="newPriority" name="priority" class="form-select form-select-lg">
           <option value="normal">Normal</option>
           <option value="important">Important</option>
           <option value="urgent">Urgent</option>
         </select>
+      </div>
+      <div class="col-md-3">
+        <input 
+          type="date"
+          class="form-control form-control-lg"
+          [(ngModel)]="newDueDate"
+          name="dueDate"
+          placeholder="Échéance"
+        >
       </div>
       <div class="col-md-3 d-grid">
         <button class="btn btn-primary btn-lg" type="submit" [disabled]="!selectedFolderId">
@@ -39,7 +46,7 @@
       </div>
     </form>
 
-    
+    <!-- Filtres -->
     <div class="row mb-3">
       <div class="col-md-4 mb-2">
         <input type="text" class="form-control" placeholder="Rechercher une tâche..."
@@ -63,28 +70,39 @@
     </div>
 
     <ul class="list-group">
-       <li class="list-group-item d-flex align-items-center">
-          <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()">
-          <span class="ms-2">Tout sélectionner</span>
-        </li>
-        <div class="mb-3" *ngIf="selectedTodos().length > 0">
-          <button class="btn btn-danger btn-sm me-2" (click)="deleteSelectedTodos()">
-            <i class="bi bi-trash"></i> Supprimer la sélection
-          </button>
-          <button class="btn btn-secondary btn-sm">
-            <i class="bi bi-archive"></i> Archiver la sélection
-          </button>
-        </div>
-        <li 
-          class="list-group-item d-flex justify-content-between align-items-center"
-          *ngFor="let todo of filteredTodos"
-          [ngClass]="{'list-group-item-success': todo.done}"
-        >
-        <div class="d-flex align-items-center">
+      <li class="list-group-item d-flex align-items-center bg-light">
+        <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()">
+        <span class="ms-2">Tout sélectionner</span>
+      </li>
+      <div class="mb-3" *ngIf="selectedTodos().length > 0">
+        <button class="btn btn-danger btn-sm me-2" (click)="deleteSelectedTodos()">
+          <i class="bi bi-trash"></i> Supprimer la sélection
+        </button>
+        <button class="btn btn-secondary btn-sm" disabled>
+          <i class="bi bi-archive"></i> Archiver la sélection
+        </button>
+      </div>
+      <li 
+        class="list-group-item d-flex justify-content-between align-items-center"
+        *ngFor="let todo of filteredTodos"
+        [ngClass]="{'list-group-item-success': todo.done, 'opacity-50': todo.done}"
+      > 
+    <!-- div pour la liste de todo est les option de modification-->
+        <div class="d-flex align-items-center flex-wrap" style="min-width: 0;">
           <input type="checkbox" [(ngModel)]="todo.selected" (change)="onSelectChange()">
           
           <!-- Texte -->
-          <span *ngIf="editId !== todo.id" [class.text-decoration-line-through]="todo.done" class="fs-5">{{ todo.text }}</span>
+          <span
+            *ngIf="editId !== todo.id"
+            [class.text-decoration-line-through]="todo.done"
+            class="fs-5 ms-2 text-truncate todo-text"
+            style="max-width: 350px; cursor: pointer;"
+            [attr.title]="todo.text"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+          >
+            {{ todo.text }}
+          </span>
           <input *ngIf="editId === todo.id"
                 [(ngModel)]="editText"
                 class="form-control form-control-sm me-2"
@@ -106,7 +124,24 @@
             <option value="important">Important</option>
             <option value="urgent">Urgent</option>
           </select>
-          <input type="checkbox" class="form-check-input me-2" [checked]="todo.done" (change)="toggleDone(todo)">
+          <!-- Date d'échéance -->
+          <span *ngIf="editId !== todo.id && todo.due_date" class="badge ms-2"
+            [ngClass]="{
+              'bg-danger': isOverdue(todo),
+              'bg-info text-dark': isUpcoming(todo) && !isOverdue(todo),
+              'bg-light text-dark': !isOverdue(todo) && !isUpcoming(todo)
+            }">
+            <i class="bi bi-calendar-event"></i>
+            {{ todo.due_date | date:'dd/MM/yyyy' }}
+            <span *ngIf="isOverdue(todo)"> (En retard)</span>
+            <span *ngIf="isUpcoming(todo) && !isOverdue(todo)"> (À venir)</span>
+          </span>
+          <input *ngIf="editId === todo.id"
+                type="date"
+                [(ngModel)]="editDueDate"
+                class="form-control form-control-sm ms-2"
+                style="width: 150px; display: inline-block;">
+          <input type="checkbox" class="form-check-input ms-3" [checked]="todo.done" (change)="toggleDone(todo)">
         </div>
         
         <div>

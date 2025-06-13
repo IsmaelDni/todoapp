@@ -8,7 +8,7 @@ export interface Todo {
   text: string;
   done: boolean; // Ajoute cette ligne
   priority: string; // (optionnel si tu utilises la priorité)
-  
+  due_date?: string; // (optionnel si tu utilises la date d'échéance)
 }
 
 @Injectable({
@@ -19,21 +19,20 @@ export class TodoService {
 
   constructor(private http: HttpClient) {}
 
-  addTodo(text: string, priority: string, folderId?: number): Observable<Todo> {
-    return this.http.post<Todo>(this.apiUrl, { text, priority, folder_id: folderId });
+    addTodo(text: string, priority: string, folderId?: number, due_date?: string): Observable<Todo> {
+    return this.http.post<Todo>(this.apiUrl, { text, priority, folder_id: folderId, due_date });
   }
-
   getTodos(folderId?: number): Observable<Todo[]> {
     let params: any = {};
     if (folderId) params.folder_id = folderId;
     return this.http.get<Todo[]>(this.apiUrl, { params });
   }
-    toggleDone(id: number, done: boolean): Observable<any> {
+  toggleDone(id: number, done: boolean): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/done`, { done }, { responseType: 'json' });
   }
     
-    updateTodo(id: number, text: string, priority: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, { text, priority });
+  updateTodo(id: number, text: string, priority: string, due_date?: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, { text, priority, due_date });
   }
   // This method updates a todo item by its ID, text, and priority
 
