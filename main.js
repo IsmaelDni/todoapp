@@ -10,6 +10,7 @@ const sqlite3 = require('sqlite3').verbose();
 const appExpress = express();
 appExpress.use(cors());
 appExpress.use(express.json());
+const { Notification } = require('electron');
 
 const db = new sqlite3.Database('todos.db');
 // Créer la table si elle n'existe pas
@@ -35,6 +36,20 @@ db.serialize(() => {
 `);
   db.run("PRAGMA foreign_keys = ON");
 });
+
+function checkOverdueTodos() {
+  db.all("SELECT * FROM todos WHERE due_date IS NOT NULL AND done = 0", [], (err, rows) => {
+    if (err) return;
+    const now = new Date();
+    rows.forEach(todo => {
+      if (todo.due_date && new Date(todo.due_date) < now) {
+        new Notification({ title: 'Tâche en retard', body: todo.text }).show();
+      }
+    });
+  });
+}
+
+setInterval(checkOverdueTodos, 60 * 60 * 1000); // Vérifie toutes les heures
 
 // Récupérer les todos
 appExpress.get('/api/todos', (req, res) => {
@@ -136,16 +151,29 @@ function createWindow() {
     }
   });
 
- win.loadURL(
-  isDev
-    ? 'http://localhost:4200'
-    : `file://${path.join(__dirname, 'dist/todo-app/browser/index.html')}`
-);
+  win.loadURL(
+    isDev
+      ? 'http://localhost:4200'
+      : `file://${path.join(__dirname, 'dist/todo-app/browser/index.html')}`
+  );
 
-  if (isDev) {
-    win.webContents.openDevTools();
-  }
+    if (isDev) {
+      win.webContents.openDevTools();
+    }
 }
+
+app.whenReady().then(() => {
+  // ... création de la fenêtre ...
+ db.all("SELECT * FROM todos WHERE due_date IS NOT NULL AND done = 0", [], (err, rows) => {
+    if (err) return;
+    const now = new Date();
+    rows.forEach(todo => {
+      if (todo.due_date && new Date(todo.due_date) < now) {
+        new Notification({ title: 'Tâche en retard', body: todo.text }).show();
+      }
+    });
+  });
+});
 
 app.whenReady().then(createWindow);
 
