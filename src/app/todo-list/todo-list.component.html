@@ -85,7 +85,7 @@
         *ngFor="let todo of filteredTodos"
         [ngClass]="{'list-group-item-success': todo.done, 'opacity-50': todo.done}"
       > 
-    <!-- div pour la liste de todo est les option de modification-->
+        <!-- div pour la liste de todo est les option de modification-->
         <div class="d-flex align-items-center flex-wrap" style="min-width: 0;">
           <input type="checkbox" [(ngModel)]="todo.selected" (change)="onSelectChange()">
           
@@ -141,7 +141,35 @@
                 style="width: 150px; display: inline-block;">
           <input type="checkbox" class="form-check-input ms-3" [checked]="todo.done" (change)="toggleDone(todo)">
         </div>
-        
+
+        <!-- barre d'ajout sous tache-->
+        <div *ngIf="addSubtaskForId === todo.id" class="mt-2 ms-5">
+          <form class="d-flex" (ngSubmit)="addSubtask(todo.id)">
+            <input [(ngModel)]="newSubtaskText" name="newSubtaskText" class="form-control form-control-sm me-2" placeholder="Nouvelle sous-tâche..." required>
+            <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-plus"></i></button>
+            <button class="btn btn-secondary btn-sm ms-1" type="button" (click)="addSubtaskForId = null">Annuler</button>
+          </form>
+        </div>
+        <!-- bouton de sous-tâche -->
+
+        <div class="btn-group me-2" [ngClass]="{'show': dropdownOpenId === todo.id}">
+          <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" (click)="toggleDropdown(todo.id, $event)">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <ul class="dropdown-menu show" *ngIf="dropdownOpenId === todo.id" style="position: absolute;">
+            <li>
+              <a class="dropdown-item" href="#" (click)="showAddSubtaskInput(todo.id, $event)">
+                <i class="bi bi-plus-circle"></i> Ajouter une sous-tâche
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" (click)="openSubtasksModal(todo.id, $event)">
+                <i class="bi bi-list-task"></i> Voir les sous-tâches
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!-- bouton d'edition -->
         <div>
           <button *ngIf="editId !== todo.id" class="btn btn-outline-secondary btn-sm me-2" (click)="startEdit(todo)">
             <i class="bi bi-pencil"></i>
@@ -159,9 +187,25 @@
       </li>
     </ul>
 
+    
+
     <div *ngIf="todos.length === 0" class="text-center text-muted mt-4">
       <i class="bi bi-inbox fs-1"></i>
       <div class="mt-2">Aucune tâche pour le moment. Ajoutez-en une !</div>
+    </div>
+  </div>
+</div>
+<!-- Ajoute ceci à la fin du fichier -->
+<div class="modal fade" id="subtasksModal" tabindex="-1" aria-labelledby="subtasksModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subtasksModalLabel">Sous-tâches</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <app-subtask-list *ngIf="modalTodoId" [todoId]="modalTodoId"></app-subtask-list>
+      </div>
     </div>
   </div>
 </div>

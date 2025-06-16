@@ -1,0 +1,27 @@
+<ul class="list-group mb-2">
+  <li *ngFor="let subtask of subtasks" class="list-group-item d-flex align-items-center">
+    <input type="checkbox" class="form-check-input me-2"
+      [(ngModel)]="subtask.done"
+      (change)="toggleDone(subtask)">
+    <span [class.text-decoration-line-through]="subtask.done" class="flex-grow-1">
+      <span *ngIf="editId !== subtask.id">{{ subtask.text }}</span>
+      <input *ngIf="editId === subtask.id" [(ngModel)]="editText" class="form-control form-control-sm d-inline w-auto" (keyup.enter)="saveEdit(subtask)">
+    </span>
+    <button *ngIf="editId !== subtask.id" class="btn btn-outline-secondary btn-sm me-1" (click)="startEdit(subtask)">
+      <i class="bi bi-pencil"></i>
+    </button>
+    <button *ngIf="editId === subtask.id" class="btn btn-success btn-sm me-1" (click)="saveEdit(subtask)">
+      <i class="bi bi-check"></i>
+    </button>
+    <button *ngIf="editId === subtask.id" class="btn btn-secondary btn-sm me-1" (click)="cancelEdit()">
+      <i class="bi bi-x"></i>
+    </button>
+    <button class="btn btn-danger btn-sm" (click)="deleteSubtask(subtask)">
+      <i class="bi bi-trash"></i>
+    </button>
+  </li>
+</ul>
+<form class="d-flex" (ngSubmit)="addSubtask()">
+  <input [(ngModel)]="newSubtask" name="newSubtask" class="form-control form-control-sm me-2" placeholder="Ajouter une sous-tâche..." required>
+  <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-plus"></i></button>
+</form>

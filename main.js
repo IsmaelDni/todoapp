@@ -22,6 +22,15 @@ db.serialize(() => {
       name TEXT NOT NULL
     )
   `);
+    db.run(`
+    CREATE TABLE IF NOT EXISTS subtasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      todo_id INTEGER,
+      text TEXT,
+      done INTEGER DEFAULT 0,
+      FOREIGN KEY(todo_id) REFERENCES todos(id) ON DELETE CASCADE
+    )
+  `);
   db.run(`
   CREATE TABLE IF NOT EXISTS todos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +60,37 @@ function checkOverdueTodos() {
 
 setInterval(checkOverdueTodos, 60 * 60 * 1000); // Vérifie toutes les heures
 
+// API : CRUD pour les sous-tâches
+appExpress.get('/api/todos/:todoId/subtasks', (req, res) => {
+  db.all("SELECT * FROM subtasks WHERE todo_id = ?", [req.params.todoId], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+appExpress.post('/api/todos/:todoId/subtasks', (req, res) => {
+  const { text } = req.body;
+  db.run("INSERT INTO subtasks(todo_id, text) VALUES (?, ?)", [req.params.todoId, text], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, todo_id: req.params.todoId, text, done: 0 });
+  });
+});
+
+appExpress.patch('/api/subtasks/:id', (req, res) => {
+  const { text, done } = req.body;
+  db.run("UPDATE subtasks SET text = ?, done = ? WHERE id = ?", [text, done ? 1 : 0, req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ updated: this.changes });
+  });
+});
+
+appExpress.delete('/api/subtasks/:id', (req, res) => {
+  db.run("DELETE FROM subtasks WHERE id = ?", [req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ deleted: this.changes });
+  });
+});
+// Récupérer les sous-tâches d'un todo
 // Récupérer les todos
 appExpress.get('/api/todos', (req, res) => {
   const folderId = req.query.folder_id;

@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router'; // Import RouterOutlet pour la navigation
 import { FolderListComponent } from '../folder-list/folder-list.component';
+import { SubtaskListComponent } from '../subtask-list/subtask-list.component';
+import { SubtaskService } from '../subtask.service';
 
 @Component({
   selector: 'app-todo-list',
   standalone: true,
-  imports: [FormsModule,CommonModule, RouterModule, FolderListComponent],
+  imports: [FormsModule, CommonModule, RouterModule, FolderListComponent, SubtaskListComponent],
   templateUrl: './todo-list.component.html',
   styleUrl: './todo-list.component.css'
 })
@@ -32,10 +34,54 @@ export class TodoListComponent implements OnInit {
   selectedFolderId: number | null = null; // This is used to track the selected folder ID
   selectAll: boolean = false;
 
+  dropdownOpenId: number|null = null;
+  addSubtaskForId: number|null = null;
+  newSubtaskText: string = '';
+  modalTodoId: number|null = null;
+
   
 
-  constructor(public todoService: TodoService) {}
+  
+
+  constructor(public todoService: TodoService,  public subtaskService: SubtaskService // <-- ajoute ceci
+) {}
   // This is the constructor where you inject the TodoService
+  
+
+  toggleDropdown(id: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.dropdownOpenId = this.dropdownOpenId === id ? null : id;
+    setTimeout(() => {
+      const close = () => { this.dropdownOpenId = null; document.removeEventListener('click', close); };
+      document.addEventListener('click', close);
+    });
+  }
+
+  showAddSubtaskInput(id: number, event: MouseEvent) {
+    event.preventDefault();
+    this.addSubtaskForId = id;
+    this.dropdownOpenId = null;
+    this.newSubtaskText = '';
+  }
+
+  addSubtask(todoId: number) {
+    if (this.newSubtaskText.trim()) {
+      this.subtaskService.addSubtask(todoId, this.newSubtaskText).subscribe(() => {
+        this.newSubtaskText = '';
+        this.addSubtaskForId = null;
+      });
+    }
+  }
+
+  openSubtasksModal(todoId: number, event: MouseEvent) {
+    event.preventDefault();
+    this.modalTodoId = todoId;
+    this.dropdownOpenId = null;
+    setTimeout(() => {
+      const modal = new (window as any).bootstrap.Modal(document.getElementById('subtasksModal'));
+      modal.show();
+    });
+  }
 
   
   get filteredTodos() {
