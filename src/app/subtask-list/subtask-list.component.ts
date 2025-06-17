@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges,SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SubtaskService, Subtask } from '../subtask.service';
@@ -7,11 +7,9 @@ import { SubtaskService, Subtask } from '../subtask.service';
   selector: 'app-subtask-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    
-  `
+  templateUrl: './subtask-list.component.html'
 })
-export class SubtaskListComponent implements OnInit {
+export class SubtaskListComponent implements OnInit, OnChanges {
   @Input() todoId!: number;
   subtasks: Subtask[] = [];
   newSubtask: string = '';
@@ -23,6 +21,13 @@ export class SubtaskListComponent implements OnInit {
 
   ngOnInit() {
     this.loadSubtasks();
+  }
+
+  
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['todoId'] && !changes['todoId'].firstChange) {
+      this.loadSubtasks();
+    }
   }
 
   loadSubtasks() {

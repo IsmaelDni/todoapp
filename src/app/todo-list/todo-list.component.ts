@@ -47,7 +47,8 @@ export class TodoListComponent implements OnInit {
 ) {}
   // This is the constructor where you inject the TodoService
   
-
+  // This method toggles the dropdown menu for subtasks
+  // It opens the dropdown if it's closed, or closes it if it's already open
   toggleDropdown(id: number, event: MouseEvent) {
     event.stopPropagation();
     this.dropdownOpenId = this.dropdownOpenId === id ? null : id;
@@ -73,6 +74,7 @@ export class TodoListComponent implements OnInit {
     }
   }
 
+  // This method opens the modal for subtasks
   openSubtasksModal(todoId: number, event: MouseEvent) {
     event.preventDefault();
     this.modalTodoId = todoId;

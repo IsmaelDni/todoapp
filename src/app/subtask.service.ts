@@ -13,10 +13,12 @@ export interface Subtask {
 })
 export class SubtaskService {
 
-  private apiUrl = 'http://localhost:3000/api/subtasks';
+  private apiUrl = 'http://localhost:3000/api';
 
   constructor(private http:HttpClient) { }
-    getSubtasks(todoId: number): Observable<Subtask[]> {
+
+    // This method retrieves all subtasks for a specific todo item by its ID
+  getSubtasks(todoId: number): Observable<Subtask[]> {
     return this.http.get<Subtask[]>(`${this.apiUrl}/todos/${todoId}/subtasks`);
   }
 
