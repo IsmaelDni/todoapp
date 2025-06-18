@@ -1,5 +1,5 @@
 <ul class="list-group mb-2">
-  <li *ngFor="let subtask of subtasks" class="list-group-item d-flex align-items-center">
+  <li *ngFor="let subtask of subtasks" class="list-group-item d-flex align-items-center flex-wrap gap-2">
     <input type="checkbox" class="form-check-input me-2"
       [(ngModel)]="subtask.done"
       (change)="toggleDone(subtask)">
@@ -21,7 +21,7 @@
     </button>
   </li>
 </ul>
-<form class="d-flex" (ngSubmit)="addSubtask()">
+<form class="d-flex flex-wrap gap-2" (ngSubmit)="addSubtask()">
   <input [(ngModel)]="newSubtask" name="newSubtask" class="form-control form-control-sm me-2" placeholder="Ajouter une sous-tâche..." required>
   <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-plus"></i></button>
 </form>
